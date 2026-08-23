@@ -167,15 +167,12 @@ const buildService = () => {
   const getOrRecomputeManyOrAllFlatEntityMapsWithHashes = jest
     .fn()
     .mockResolvedValue(buildCacheResult());
-  const reportAll = jest.fn();
-  const service = new TimelineActivityRoutingPlanService(
-    { getOrRecomputeManyOrAllFlatEntityMapsWithHashes } as never,
-    { reportAll } as never,
-  );
+  const service = new TimelineActivityRoutingPlanService({
+    getOrRecomputeManyOrAllFlatEntityMapsWithHashes,
+  } as never);
 
   return {
     getOrRecomputeManyOrAllFlatEntityMapsWithHashes,
-    reportAll,
     service,
   };
 };
@@ -239,26 +236,23 @@ describe('TimelineActivityRoutingPlanService', () => {
   });
 
   it('reuses a routing plan while all metadata hashes are unchanged', async () => {
-    const { reportAll, service } = buildService();
+    const { service } = buildService();
 
-    await service.shouldProcessEvent({
+    const firstRules = await service.getRulesForEventBatch({
       flatObjectMetadata: NOTE_OBJECT as never,
       workspaceId: WORKSPACE_ID,
     });
-    await service.shouldProcessEvent({
-      flatObjectMetadata: NOTE_TARGET_OBJECT as never,
+    const secondRules = await service.getRulesForEventBatch({
+      flatObjectMetadata: NOTE_OBJECT as never,
       workspaceId: WORKSPACE_ID,
     });
 
-    expect(reportAll).toHaveBeenCalledTimes(4);
+    expect(secondRules.sourceRules[0]).toBe(firstRules.sourceRules[0]);
   });
 
   it('rebuilds eligibility when timeline type metadata changes', async () => {
-    const {
-      getOrRecomputeManyOrAllFlatEntityMapsWithHashes,
-      reportAll,
-      service,
-    } = buildService();
+    const { getOrRecomputeManyOrAllFlatEntityMapsWithHashes, service } =
+      buildService();
 
     getOrRecomputeManyOrAllFlatEntityMapsWithHashes
       .mockResolvedValueOnce(buildCacheResult())
@@ -278,6 +272,5 @@ describe('TimelineActivityRoutingPlanService', () => {
         workspaceId: WORKSPACE_ID,
       }),
     ).resolves.toBe(false);
-    expect(reportAll).toHaveBeenCalledTimes(8);
   });
 });

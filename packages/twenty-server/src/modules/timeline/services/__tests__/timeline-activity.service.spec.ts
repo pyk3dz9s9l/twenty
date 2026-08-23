@@ -115,8 +115,6 @@ const buildService = ({
         ],
       ]),
     );
-  const report = jest.fn();
-
   const service = new TimelineActivityService(
     { upsertTimelineActivities } as never,
     {
@@ -131,7 +129,6 @@ const buildService = ({
       resolveTargetFromRecord,
       findSourceRecordsByRecordId,
     } as never,
-    { report } as never,
   );
 
   return {
@@ -140,7 +137,6 @@ const buildService = ({
     resolveTimelineActivityType,
     resolveTargetsBySourceRecordId,
     findSourceRecordsByRecordId,
-    report,
   };
 };
 
